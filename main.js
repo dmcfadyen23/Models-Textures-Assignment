@@ -75,27 +75,27 @@ function updateFruits(fruit) {
 
 }
 
-function onMouseDown(event) {
-    holding = true;
-}
-function onMouseMove(event) {
-    mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
-    mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
-}
-function onMouseUp(event) {
-    holding = false;
-}
+// function onMouseDown(event) {
+//     holding = true;
+// }
+// function onMouseMove(event) {
+//     mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+//     mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+// }
+// function onMouseUp(event) {
+//     holding = false;
+// }
 
-//Event Listeners
-window.addEventListener('mousedown', onMouseDown);
-window.addEventListener('mouseup', onMouseUp);
-window.addEventListener('mousemove', onMouseMove);
+// //Event Listeners
+// window.addEventListener('mousedown', onMouseDown);
+// window.addEventListener('mouseup', onMouseUp);
+// window.addEventListener('mousemove', onMouseMove);
 
 function setScene() {
     scene = new THREE.Scene( );
 
     const ratio = window.innerWidth/window.innerHeight;
-    camera = new THREE.PerspectiveCamera(30,ratio,0.1,1000);
+    camera = new THREE.PerspectiveCamera(100,ratio,0.1,1000);
     camera.position.set(0,0,0);
     camera.lookAt(0,5,0);
 
@@ -103,15 +103,15 @@ function setScene() {
     renderer.setSize(window.innerWidth,window.innerHeight);
     document.body.appendChild(renderer.domElement );
 
-    loadRoom('/models/Kitchen/kitchen_model.glb', "bench", new THREE.Vector3(4,4,4), new THREE.Vector3(20,-5,40));
-    loadFruit('/models/Broccoli/broccoli_v3.gltf', "broccoli", new THREE.Vector3(1,1,1), new THREE.Vector3(0,0,0), 0);
+    loadRoom('/models/Kitchen/kitchen_model.glb', "bench", 4,4,4, 20,-5,40);
+    loadFruit('/models/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, 0,0,0, 0);
 }
 
-function loadRoom(pathname, name, scale, position) {
+function loadRoom(pathname, name, scalex, scaley, scalez, posx, posy, posz) {
     const loader = new GLTFLoader();
     loader.load(pathname, function (model) {
-        model.scene.scale.set(scale);
-        model.scene.position.set(position);
+        model.scene.scale.set(scalex, scaley, scalez);
+        model.scene.position.set(posx, posy, posz);
         model.name = name;
         room = model;
         scene.add(room.scene);
@@ -119,11 +119,11 @@ function loadRoom(pathname, name, scale, position) {
     
 }
 
-function loadFruit(pathname, name, scale, position, index) {
+function loadFruit(pathname, name, scalex, scaley, scalez, posx, posy, posz, index) {
     const loader = new GLTFLoader();
     loader.load(pathname, function (model) {
-        model.scene.scale.set(scale);
-        model.scene.position.set(position);
+        model.scene.scale.set(scalex, scaley, scalez);
+        model.scene.position.set(posx, posy, posz);
         model.name = name;
         fruits[index] = model;
         scene.add(model.scene);
