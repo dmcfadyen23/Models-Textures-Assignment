@@ -25,12 +25,10 @@ let colours = {};
 colours["clear"] = new THREE.Color(99/255, 159/255, 255/255); // nothing
 colours["red"] = new THREE.Color(219/255, 55/255, 55/255); // watermelon DONE
 colours["green"] = new THREE.Color(85/255, 145/255, 60/255); // broccoli DONE
-colours["pink"] = new THREE.Color(222/255, 129/255, 180/255); // strawberry
-colours["orange"] = new THREE.Color(222/255, 123/255, 47/255); // orange
+colours["pink"] = new THREE.Color(222/255, 129/255, 180/255); // strawberry DONE
+colours["orange"] = new THREE.Color(222/255, 123/255, 47/255); // pumpkin DONE
 colours["yellow"] = new THREE.Color(227/255, 212/255, 45/255); // banana DONE
-colours["purple"] = new THREE.Color(133/255, 55/255, 158/255); // grape
 
-// colours["blue"] = new THREE.Color(8/255, 68/255, 163/255); // blueberry NONE
 
 const gui = new GUI();
 
@@ -121,7 +119,8 @@ function setScene() {
     loadFruit('/models/fruits/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, -5,8.3,0, 0);
     loadFruit('/models/fruits/Banana/Banana.glb', "banana", 15,15,15, -3,8.3,0, 1);
     loadFruit('/models/fruits/Watermelon/uploads_files_5929439_Half_of_a_watermelon_0218164538_refine.glb', "watermelon", 1,1,1, -6,8.8,3, 2);
-    loadFruit('/models/fruits/Strawberry/uploads_files_5834416_Strawberry.glb', "strawberry", 0.8,0.8,0.8, 3,9.4,0, 3);
+    loadFruit('/models/fruits/Strawberry/uploads_files_5834416_Strawberry.glb', "strawberry", 0.8,0.8,0.8, 2.5,9.4,0, 3);
+    loadFruit('/models/fruits/Pumpkin/uploads_files_4241762_pumpkin(1).glb', "pumpkin", 1,1,1, 4.5,9,0, 4);
 }
 
 function setWalls() {
