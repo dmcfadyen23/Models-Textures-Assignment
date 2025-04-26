@@ -95,7 +95,7 @@ function setScene() {
     scene = new THREE.Scene( );
 
     const ratio = window.innerWidth/window.innerHeight;
-    camera = new THREE.PerspectiveCamera(30,ratio,0.1,1000);
+    camera = new THREE.PerspectiveCamera(40,ratio,0.1,1000);
     camera.position.set(0,15,20);
     camera.lookAt(0,10,0);
 
@@ -106,7 +106,8 @@ function setScene() {
     setWalls();
     loadModel('/models/Table/uploads_files_3912834_Table.glb', "table", 10,10,10, 0,0,0);
     loadModel('/models/Lights/uploads_files_3293341_DH.glb', "lamp", 8,8,8, -35,2,0);
-    loadFruit('/models/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, 0,0,0, 0);
+    loadWaterGlass();
+    loadFruit('/models/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, 0,8.3,0, 0);
 }
 
 function setWalls() {
@@ -118,7 +119,7 @@ function setWalls() {
         aoMap: new THREE.TextureLoader().load("/textures/wood/Wood_Floor_012_ambientOcclusion.jpg"),
         displacementMap: new THREE.TextureLoader().load("/textures/wood/Wood_Floor_012_height.png"),
         specularMap: new THREE.TextureLoader().load("/textures/wood/Wood_Floor_012_roughness.jpg"),
-        side: THREE.DoubleSide,
+        side: THREE.DoubleSide
     });
     const wallBack = new THREE.Mesh(wall_geometry, wall_material);
     const wallLeft = wallBack.clone();
@@ -140,6 +141,45 @@ function setWalls() {
     scene.add(wallLeft);
     scene.add(wallRight);
     scene.add(floor);
+}
+
+function loadWaterGlass() {
+    const cup_geometry = new THREE.CylinderGeometry(2,1,3, 32, 1, true);
+    const cup_material = new THREE.MeshPhongMaterial({
+        wireframe: false,
+        map: new THREE.TextureLoader().load("/textures/glass/Glass_Frosted_001_basecolor.jpg"),
+        normalMap: new THREE.TextureLoader().load("/textures/glass/Glass_Frosted_001_normal.jpg"),
+        aoMap: new THREE.TextureLoader().load("/textures/glass/Glass_Frosted_001_ambientOcclusion.jpg"),
+        // displacementMap: new THREE.TextureLoader().load("/textures/glass/Glass_Frosted_001_height.png"),
+        specularMap: new THREE.TextureLoader().load("/textures/glass/Glass_Frosted_001_roughness.jpg"),
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+        name: "glass"
+    });
+    const glass = new THREE.Mesh(cup_geometry, cup_material);
+    glass.position.set(0,9.8,0);
+
+    const water_geometry = new THREE.CylinderGeometry(1.8,0.9,2.5,);
+    // const water_material = new THREE.MeshPhongMaterial({
+    //     wireframe: false,
+    //     map: new THREE.TextureLoader().load("/textures/water/Water_002_COLOR.jpg"),
+    //     normalMap: new THREE.TextureLoader().load("/textures/water/Water_002_NORM.jpg"),
+    //     aoMap: new THREE.TextureLoader().load("/textures/water/Water_002_OCC.jpg"),
+    //     // displacementMap: new THREE.TextureLoader().load("/textures/water/Water_002_DISP.png"),
+    //     specularMap: new THREE.TextureLoader().load("/textures/water/Water_002_ROUGH.jpg"),
+    //     side: THREE.DoubleSide
+    // });
+    const water_material = new THREE.MeshPhongMaterial({
+        wireframe: false,
+        side: THREE.DoubleSide,
+        color: new THREE.Color(99/255, 159/255, 255/255),
+    })
+    const water = new THREE.Mesh(water_geometry, water_material);
+    water.position.set(0,9.8,0);
+
+    scene.add(glass);
+    scene.add(water);
 }
 
 function loadModel(pathname, name, scalex, scaley, scalez, posx, posy, posz) {
@@ -173,15 +213,14 @@ function addLighting() {
     scene.add(lampCameraLight);
     scene.add(lampCameraLight.target);
 
-    const lampCameraHelper = new THREE.SpotLightHelper(lampCameraLight);
-    scene.add(lampCameraHelper);
+    // const lampCameraHelper = new THREE.SpotLightHelper(lampCameraLight);
+    // scene.add(lampCameraHelper);
 
-    // const ceilingcameraLight = new THREE.SpotLight(new THREE.Color(1,1,1), 100);
-    // ceilingcameraLight.position.set(0, 20, 0);
-    // ceilingcameraLight.lookAt(0, 0, 0);
-    // scene.add(ceilingcameraLight);
+    const ceilingcameraLight = new THREE.PointLight(new THREE.Color(1,0.7,0.2), 100);
+    ceilingcameraLight.position.set(0, 25, 0);
+    scene.add(ceilingcameraLight);
 
-    // const ceilingCameraHelper = new THREE.SpotLightHelper(ceilingcameraLight, new THREE.Color(1,0,1));
+    // const ceilingCameraHelper = new THREE.PointLightHelper(ceilingcameraLight);
     // scene.add(ceilingCameraHelper);
 
     const ambientLight = new THREE.AmbientLight(new THREE.Color(1,1,1), 1);
