@@ -10,6 +10,15 @@ let holding = false;
 const mouse = new THREE.Vector2();
 
 let water = new THREE.Mesh();
+
+/* ORDER
+0 - broccoli
+1 - banana
+2 - watermelon
+3 - strawberry
+4 - pumpkin
+*/
+
 let fruits = [];
 
 let fruitPos = [];
@@ -66,7 +75,7 @@ const gui = new GUI();
 setScene();
 
 function setupGUI() {
-    // gui.add(settings, 'reset')
+    // gui.add(settings, 'resetFunction')
     // gui.add(settings, 'x_size', 1, 20).onChange(value => {room.scene.scale.set(value, settings.y_size, settings.z_size)});
     // gui.add(settings, 'y_size', 1, 20).onChange(value => {room.scene.scale.set(settings.x_size, value, settings.z_size)});
     // gui.add(settings, 'z_size', 1, 20).onChange(value => {room.scene.scale.set(settings.x_size, settings.y_size, value)});
@@ -102,12 +111,12 @@ function doesIntersect(intersects, name) {
 function updateFruits(fruitindex) {
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(scene.children, false);
+    const intersects = raycaster.intersectObjects(scene.children, true);
 
     if (holding) {
-        
-        console.log(scene.children);
-        if (intersects.length > 0 && doesIntersect(intersects, fruitNames[fruitindex])) {
+        console.log(intersects);
+        if (doesIntersect(intersects, fruitNames[fruitindex])) {
+            console.log(fruitNames[fruitindex]);
             fruits[fruitindex].position.x = intersects[0].point.x;
             fruits[fruitindex].position.y = intersects[0].point.y;
         }
@@ -213,9 +222,9 @@ function loadWaterGlass() {
         transparent: true,
         opacity: 0.6,
         side: THREE.DoubleSide,
-        name: "glass"
     });
     const glass = new THREE.Mesh(cup_geometry, cup_material);
+    glass.name = "glass";
     glass.position.set(0,9.8,0);
 
     const water_geometry = new THREE.CylinderGeometry(1.75,0.9,2.5,);
@@ -234,6 +243,7 @@ function loadWaterGlass() {
         color: colours["clear"],
     })
     water = new THREE.Mesh(water_geometry, water_material);
+    water.name = "water";
     water.position.set(0,9.8,0);
 
     scene.add(glass);
@@ -245,7 +255,7 @@ function loadModel(pathname, name, scalex, scaley, scalez, posx, posy, posz) {
     loader.load(pathname, function (model) {
         model.scene.scale.set(scalex, scaley, scalez);
         model.scene.position.set(posx, posy, posz);
-        model.name = name;
+        model.userData.name = name;
         scene.add(model.scene);
     });
     
@@ -256,7 +266,7 @@ function loadFruit(pathname, name, scalex, scaley, scalez, posx, posy, posz, ind
     loader.load(pathname, function (model) {
         model.scene.scale.set(scalex, scaley, scalez);
         model.scene.position.set(posx, posy, posz);
-        model.name = name;
+        model.userData.name = name;
         fruits[index] = model;
         scene.add(model.scene);
     });
