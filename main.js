@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ThreeMFLoader } from 'three/examples/jsm/Addons.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 var scene;
 var camera;
@@ -21,6 +21,16 @@ let settings = {
     z_pos: 0
 }
 
+let colours = {};
+colours["clear"] = new THREE.Color(99/255, 159/255, 255/255); // nothing
+colours["red"] = new THREE.Color(219/255, 55/255, 55/255); // watermelon DONE
+colours["green"] = new THREE.Color(85/255, 145/255, 60/255); // broccoli DONE
+colours["pink"] = new THREE.Color(222/255, 129/255, 180/255); // strawberry
+colours["orange"] = new THREE.Color(222/255, 123/255, 47/255); // orange
+colours["yellow"] = new THREE.Color(227/255, 212/255, 45/255); // banana DONE
+colours["purple"] = new THREE.Color(133/255, 55/255, 158/255); // grape
+
+// colours["blue"] = new THREE.Color(8/255, 68/255, 163/255); // blueberry NONE
 
 const gui = new GUI();
 
@@ -107,7 +117,11 @@ function setScene() {
     loadModel('/models/Table/uploads_files_3912834_Table.glb', "table", 10,10,10, 0,0,0);
     loadModel('/models/Lights/uploads_files_3293341_DH.glb', "lamp", 8,8,8, -35,2,0);
     loadWaterGlass();
-    loadFruit('/models/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, 0,8.3,0, 0);
+
+    loadFruit('/models/fruits/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, -5,8.3,0, 0);
+    loadFruit('/models/fruits/Banana/Banana.glb', "banana", 15,15,15, -3,8.3,0, 1);
+    loadFruit('/models/fruits/Watermelon/uploads_files_5929439_Half_of_a_watermelon_0218164538_refine.glb', "watermelon", 1,1,1, -6,8.8,3, 2);
+    loadFruit('/models/fruits/Strawberry/uploads_files_5834416_Strawberry.glb', "strawberry", 0.8,0.8,0.8, 3,9.4,0, 3);
 }
 
 function setWalls() {
@@ -160,7 +174,7 @@ function loadWaterGlass() {
     const glass = new THREE.Mesh(cup_geometry, cup_material);
     glass.position.set(0,9.8,0);
 
-    const water_geometry = new THREE.CylinderGeometry(1.8,0.9,2.5,);
+    const water_geometry = new THREE.CylinderGeometry(1.75,0.9,2.5,);
     // const water_material = new THREE.MeshPhongMaterial({
     //     wireframe: false,
     //     map: new THREE.TextureLoader().load("/textures/water/Water_002_COLOR.jpg"),
@@ -173,7 +187,7 @@ function loadWaterGlass() {
     const water_material = new THREE.MeshPhongMaterial({
         wireframe: false,
         side: THREE.DoubleSide,
-        color: new THREE.Color(99/255, 159/255, 255/255),
+        color: colours["clear"],
     })
     const water = new THREE.Mesh(water_geometry, water_material);
     water.position.set(0,9.8,0);
@@ -203,6 +217,11 @@ function loadFruit(pathname, name, scalex, scaley, scalez, posx, posy, posz, ind
         scene.add(model.scene);
     });
     
+}
+
+function loadObj(pathname, name, scalex, scaley, scalez, posx, posy, posz, index) {
+    const loader = new OBJLoader();
+    loader.load(pathname, )
 }
 
 function addLighting() {
