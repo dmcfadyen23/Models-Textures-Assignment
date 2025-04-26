@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 var scene;
 var camera;
@@ -10,16 +9,22 @@ var renderer;
 let holding = false;
 const mouse = new THREE.Vector2();
 
-let room = null;
+let water = new THREE.Mesh();
 let fruits = [];
-let settings = {
-    x_size: 1,
-    y_size: 1,
-    z_size: 1,
-    x_pos: 0,
-    y_pos: 0,
-    z_pos: 0
-}
+
+let fruitPos = [];
+fruitPos[0] = new THREE.Vector3(-6, 8.3, 0);
+fruitPos[1] = new THREE.Vector3(-4.3,8.3,0);
+fruitPos[2] = new THREE.Vector3(-2,8.8,0);
+fruitPos[3] = new THREE.Vector3(2.5,9.4,0);
+fruitPos[4] = new THREE.Vector3(4.5,9,0);
+
+let fruitNames = [];
+fruitNames[0] = "broccoli";
+fruitNames[1] = "banana";
+fruitNames[2] = "watermelon";
+fruitNames[3] = "strawberry";
+fruitNames[4] = "pumpkin";
 
 let colours = {};
 colours["clear"] = new THREE.Color(99/255, 159/255, 255/255); // nothing
@@ -28,6 +33,29 @@ colours["green"] = new THREE.Color(85/255, 145/255, 60/255); // broccoli DONE
 colours["pink"] = new THREE.Color(222/255, 129/255, 180/255); // strawberry DONE
 colours["orange"] = new THREE.Color(222/255, 123/255, 47/255); // pumpkin DONE
 colours["yellow"] = new THREE.Color(227/255, 212/255, 45/255); // banana DONE
+
+let settings = {
+    reset: resetFunction(),
+    x_size: 1,
+    y_size: 1,
+    z_size: 1,
+    x_pos: 0,
+    y_pos: 0,
+    z_pos: 0
+}
+
+function resetFunction() {
+    const i = 0;
+    for (const fruit of fruits) {
+        fruit.visible = true;
+        fruit.position = fruitPos[i];
+        i++;
+    }
+    water.material.color.setHex = colours["clear"];
+}
+
+
+
 
 
 const gui = new GUI();
@@ -38,6 +66,7 @@ const gui = new GUI();
 setScene();
 
 function setupGUI() {
+    // gui.add(settings, 'reset')
     // gui.add(settings, 'x_size', 1, 20).onChange(value => {room.scene.scale.set(value, settings.y_size, settings.z_size)});
     // gui.add(settings, 'y_size', 1, 20).onChange(value => {room.scene.scale.set(settings.x_size, value, settings.z_size)});
     // gui.add(settings, 'z_size', 1, 20).onChange(value => {room.scene.scale.set(settings.x_size, settings.y_size, value)});
@@ -49,15 +78,15 @@ function setupGUI() {
 setupGUI();
 addLighting();
 
-let controls = new OrbitControls( camera, renderer.domElement );
+// let controls = new OrbitControls( camera, renderer.domElement );
 
 renderer.setAnimationLoop(UpdateScene);
 
 function UpdateScene() {
     // controls.update();
-    // for (let i = 0; i < fruits.length; i++) {
-    //     updateFruits(fruits[i]);
-    // }
+    for (let i = 0; i < fruits.length; i++) {
+        updateFruits(i);
+    }
     renderer.render(scene, camera);
 }
 
@@ -70,34 +99,47 @@ function doesIntersect(intersects, name) {
     return false;
 }
 
-function updateFruits(fruit) {
+function updateFruits(fruitindex) {
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(scene.children, false);
 
-    // if (holding) {
-    //     if (intersects.length > 0 && doesIntersect(intersects, fruit)) {
-            
-    //     }
-    // }
+    if (holding) {
+        
+        console.log(scene.children);
+        if (intersects.length > 0 && doesIntersect(intersects, fruitNames[fruitindex])) {
+            fruits[fruitindex].position.x = intersects[0].point.x;
+            fruits[fruitindex].position.y = intersects[0].point.y;
+        }
+    }
+    else {
+        if (doesIntersect(intersects, "glass") && doesIntersect(intersects, fruitNames[fruitindex])) {
+            fruits[fruitindex].visible = false;
+        }
+        else {
+            if (!doesIntersect(intersects, "table") && doesIntersect(intersects, fruitNames[fruitindex])) {
+                fruits[fruitindex].position = fruitPos[fruitindex];
+            }
+        }
+    }
 
 }
 
-// function onMouseDown(event) {
-//     holding = true;
-// }
-// function onMouseMove(event) {
-//     mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
-//     mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
-// }
-// function onMouseUp(event) {
-//     holding = false;
-// }
+function onMouseDown(event) {
+    holding = true;
+}
+function onMouseMove(event) {
+    mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+}
+function onMouseUp(event) {
+    holding = false;
+}
 
-// //Event Listeners
-// window.addEventListener('mousedown', onMouseDown);
-// window.addEventListener('mouseup', onMouseUp);
-// window.addEventListener('mousemove', onMouseMove);
+//Event Listeners
+window.addEventListener('mousedown', onMouseDown);
+window.addEventListener('mouseup', onMouseUp);
+window.addEventListener('mousemove', onMouseMove);
 
 function setScene() {
     scene = new THREE.Scene( );
@@ -116,12 +158,14 @@ function setScene() {
     loadModel('/models/Lights/uploads_files_3293341_DH.glb', "lamp", 8,8,8, -35,2,0);
     loadWaterGlass();
 
-    loadFruit('/models/fruits/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, -5,8.3,0, 0);
-    loadFruit('/models/fruits/Banana/Banana.glb', "banana", 15,15,15, -3,8.3,0, 1);
-    loadFruit('/models/fruits/Watermelon/uploads_files_5929439_Half_of_a_watermelon_0218164538_refine.glb', "watermelon", 1,1,1, -6,8.8,3, 2);
+    loadFruit('/models/fruits/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, -6,8.3,0, 0);
+    loadFruit('/models/fruits/Banana/Banana.glb', "banana", 15,15,15, -4.3,8.3,0, 1);
+    loadFruit('/models/fruits/Watermelon/uploads_files_5929439_Half_of_a_watermelon_0218164538_refine.glb', "watermelon", 1,1,1, -2,8.8,0, 2);
     loadFruit('/models/fruits/Strawberry/uploads_files_5834416_Strawberry.glb', "strawberry", 0.8,0.8,0.8, 2.5,9.4,0, 3);
     loadFruit('/models/fruits/Pumpkin/uploads_files_4241762_pumpkin(1).glb', "pumpkin", 1,1,1, 4.5,9,0, 4);
 }
+
+
 
 function setWalls() {
     const wall_geometry = new THREE.PlaneGeometry(30,30);
@@ -135,6 +179,7 @@ function setWalls() {
         side: THREE.DoubleSide
     });
     const wallBack = new THREE.Mesh(wall_geometry, wall_material);
+    wallBack.name = "room";
     const wallLeft = wallBack.clone();
     const wallRight = wallBack.clone();
     const floor = wallBack.clone();
@@ -188,7 +233,7 @@ function loadWaterGlass() {
         side: THREE.DoubleSide,
         color: colours["clear"],
     })
-    const water = new THREE.Mesh(water_geometry, water_material);
+    water = new THREE.Mesh(water_geometry, water_material);
     water.position.set(0,9.8,0);
 
     scene.add(glass);
@@ -218,10 +263,6 @@ function loadFruit(pathname, name, scalex, scaley, scalez, posx, posy, posz, ind
     
 }
 
-function loadObj(pathname, name, scalex, scaley, scalez, posx, posy, posz, index) {
-    const loader = new OBJLoader();
-    loader.load(pathname, )
-}
 
 function addLighting() {
     const lampCameraLight = new THREE.SpotLight(new THREE.Color(1,1,1), 100, 0, Math.PI/4, 0.1);
