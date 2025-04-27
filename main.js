@@ -2,11 +2,18 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { randInt } from 'three/src/math/MathUtils.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { FontLoader } from 'three/examples/jsm/Addons.js';
 
 var scene;
 var camera;
 var renderer;
 let holding = false;
+let loaded = false;
+let objective = randInt(0,4);
+let objectiveReached = false;
+// console.log(objective);
 const mouse = new THREE.Vector2();
 
 /* ORDER
@@ -51,13 +58,17 @@ const water = new THREE.Mesh(water_geometry, water_material);
 water.name = "water";
 
 function resetFunction() {
-    const i = 0;
-    for (const fruit of fruits) {
-        fruit.visible = true;
-        fruit.position = fruitPos[i];
+    let i = 0;
+    console.log("enter reset");
+    fruits.forEach(function() {
+        fruits[i].scene.visible = true;
+        fruits[i].scene.position.x = fruitPos[i].x;
+        fruits[i].scene.position.y = fruitPos[i].y;
         i++;
-    }
+    })
     water.material.color = colours["clear"];
+    objective = randInt(0,4);
+    console.log(objective);
 }
 
 let settings = {
@@ -74,7 +85,7 @@ const gui = new GUI();
 setScene();
 
 function setupGUI() {
-    gui.add(settings, 'resetFunction')
+    // gui.add(settings, 'resetFunction').name("Reset and Change Objective");
     // gui.add(settings, 'x_size', 1, 20).onChange(value => {room.scene.scale.set(value, settings.y_size, settings.z_size)});
     // gui.add(settings, 'y_size', 1, 20).onChange(value => {room.scene.scale.set(settings.x_size, value, settings.z_size)});
     // gui.add(settings, 'z_size', 1, 20).onChange(value => {room.scene.scale.set(settings.x_size, settings.y_size, value)});
@@ -95,13 +106,32 @@ function UpdateScene() {
     for (let i = 0; i < fruits.length; i++) {
         updateFruits(i);
     }
-    water.material.color
+    if (objectiveReached) {
+        createButton();
+        objectiveReached = false;
+    }
     renderer.render(scene, camera);
+}
+
+function createButton() {
+    const loader = new FontLoader();
+    loader.load('/fonts/helvetiker_regular.typeface.json', function(font) {
+        const geometry = new TextGeometry("Objective\nCompleted", {
+            font: font,
+            size: 2,
+            depth: 0.1,
+        });
+        const textmesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial( { color: new THREE.Color(0,0,0)}));
+        textmesh.position.x = -7;
+        textmesh.position.y = 11;
+        textmesh.position.z = 5;
+        scene.add(textmesh);
+    });
 }
 
 function doesIntersect(intersects, name) {
     for (const obj of intersects) {
-        if (obj.object.userData.name === name) {
+        if (obj.object.name === name) {
             return true;
         }
     }
@@ -112,29 +142,60 @@ function updateFruits(fruitindex) {
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(scene.children, true);
-
-    const testObj = new THREE.Mesh();
-    testObj.position.x = 3;
-
-    if (holding) {
-        console.log(intersects[0].object.position.x);
-        if (doesIntersect(intersects, fruitNames[fruitindex])) {
-            console.log(fruits[fruitindex].scene);
-            fruits[fruitindex].scene.position.x = intersects[0].point.x;
-            fruits[fruitindex].scene.position.y = intersects[0].point.y;
-        }
-    }
-    else {
-        if (doesIntersect(intersects, "glass") && doesIntersect(intersects, fruitNames[fruitindex])) {
-            fruits[fruitindex].visible = false;
+    
+    if (loaded) {
+        if (holding) {
+            // console.log(objective);
+            // console.log(intersects);
+            if (doesIntersect(intersects, fruitNames[fruitindex])) {
+                // console.log(fruits[fruitindex].scene);
+                fruits[fruitindex].scene.position.x = intersects[0].point.x;
+                fruits[fruitindex].scene.position.y = intersects[0].point.y-0.15;
+            }
         }
         else {
-            if (!doesIntersect(intersects, "Desk") && doesIntersect(intersects, fruitNames[fruitindex])) {
-                console.log("off table");
-                fruits[fruitindex].position = fruitPos[fruitindex];
+            
+            if (doesIntersect(intersects, "glass") && doesIntersect(intersects, fruitNames[fruitindex])) {
+                // console.log(fruits[fruitindex]);
+                
+                // console.log(fruitindex);
+                if (objective == fruitindex) {
+                    console.log("objective reached");
+                    objectiveReached = true;
+                }
+                fruits[fruitindex].scene.visible = false;
+                fruits[fruitindex].scene.position.x = 200;
+                fruits[fruitindex].scene.position.y = 200;
+                
+                switch (fruitindex) {
+                    case 0:
+                        water.material.color = colours["green"];
+                        break;
+                    case 1:
+                        water.material.color = colours["yellow"];
+                        break;
+                    case 2:
+                        water.material.color = colours["red"];
+                        break;
+                    case 3:
+                        water.material.color = colours["pink"];
+                        break;
+                    case 4:
+                        water.material.color = colours["orange"];
+                        break;
+                }
+            }
+            else {
+                if (!doesIntersect(intersects, "Desk") && doesIntersect(intersects, fruitNames[fruitindex])) {
+                    // console.log("off table");
+                    // console.log(fruits[fruitindex].scene);
+                    fruits[fruitindex].scene.position.x = fruitPos[fruitindex].x;
+                    fruits[fruitindex].scene.position.y = fruitPos[fruitindex].y;
+                }
             }
         }
     }
+    
 
 }
 
@@ -176,6 +237,8 @@ function setScene() {
     loadFruit('/models/fruits/Watermelon/uploads_files_5929439_Half_of_a_watermelon_0218164538_refine.glb', "watermelon", 1,1,1, -2,8.8,0, 2); //watermelon
     loadFruit('/models/fruits/Strawberry/uploads_files_5834416_Strawberry.glb', "strawberry", 0.8,0.8,0.8, 2.5,9.4,0, 3); //strawberry
     loadFruit('/models/fruits/Pumpkin/uploads_files_4241762_pumpkin(1).glb', "pumpkin", 1,1,1, 4.5,9,0, 4);
+    loaded = true;
+    console.log(objective);
 }
 
 
