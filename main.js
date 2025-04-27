@@ -9,8 +9,6 @@ var renderer;
 let holding = false;
 const mouse = new THREE.Vector2();
 
-let water = new THREE.Mesh();
-
 /* ORDER
 0 - broccoli
 1 - banana
@@ -22,7 +20,7 @@ let water = new THREE.Mesh();
 let fruits = [];
 
 let fruitPos = [];
-fruitPos[0] = new THREE.Vector3(-6, 8.3, 0);
+fruitPos[0] = new THREE.Vector3(-5.7, 8.3, 0);
 fruitPos[1] = new THREE.Vector3(-4.3,8.3,0);
 fruitPos[2] = new THREE.Vector3(-2,8.8,0);
 fruitPos[3] = new THREE.Vector3(2.5,9.4,0);
@@ -30,9 +28,9 @@ fruitPos[4] = new THREE.Vector3(4.5,9,0);
 
 let fruitNames = [];
 fruitNames[0] = "broccoli";
-fruitNames[1] = "banana";
-fruitNames[2] = "watermelon";
-fruitNames[3] = "strawberry";
+fruitNames[1] = "Banana";
+fruitNames[2] = "mesh_0"; // watermelon
+fruitNames[3] = "Sphere"; // strawberry
 fruitNames[4] = "pumpkin";
 
 let colours = {};
@@ -43,15 +41,14 @@ colours["pink"] = new THREE.Color(222/255, 129/255, 180/255); // strawberry DONE
 colours["orange"] = new THREE.Color(222/255, 123/255, 47/255); // pumpkin DONE
 colours["yellow"] = new THREE.Color(227/255, 212/255, 45/255); // banana DONE
 
-let settings = {
-    reset: resetFunction(),
-    x_size: 1,
-    y_size: 1,
-    z_size: 1,
-    x_pos: 0,
-    y_pos: 0,
-    z_pos: 0
-}
+const water_geometry = new THREE.CylinderGeometry(1.75,0.9,2.5,);
+const water_material = new THREE.MeshPhongMaterial({
+    wireframe: false,
+    side: THREE.DoubleSide,
+    color: colours["clear"],
+})
+const water = new THREE.Mesh(water_geometry, water_material);
+water.name = "water";
 
 function resetFunction() {
     const i = 0;
@@ -60,10 +57,12 @@ function resetFunction() {
         fruit.position = fruitPos[i];
         i++;
     }
-    water.material.color.setHex = colours["clear"];
+    water.material.color = colours["clear"];
 }
 
-
+let settings = {
+    reset: resetFunction(),
+}
 
 
 
@@ -75,7 +74,7 @@ const gui = new GUI();
 setScene();
 
 function setupGUI() {
-    // gui.add(settings, 'resetFunction')
+    gui.add(settings, 'resetFunction')
     // gui.add(settings, 'x_size', 1, 20).onChange(value => {room.scene.scale.set(value, settings.y_size, settings.z_size)});
     // gui.add(settings, 'y_size', 1, 20).onChange(value => {room.scene.scale.set(settings.x_size, value, settings.z_size)});
     // gui.add(settings, 'z_size', 1, 20).onChange(value => {room.scene.scale.set(settings.x_size, settings.y_size, value)});
@@ -96,12 +95,13 @@ function UpdateScene() {
     for (let i = 0; i < fruits.length; i++) {
         updateFruits(i);
     }
+    water.material.color
     renderer.render(scene, camera);
 }
 
 function doesIntersect(intersects, name) {
     for (const obj of intersects) {
-        if (obj.object.name === name) {
+        if (obj.object.userData.name === name) {
             return true;
         }
     }
@@ -113,12 +113,15 @@ function updateFruits(fruitindex) {
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(scene.children, true);
 
+    const testObj = new THREE.Mesh();
+    testObj.position.x = 3;
+
     if (holding) {
-        console.log(intersects);
+        console.log(intersects[0].object.position.x);
         if (doesIntersect(intersects, fruitNames[fruitindex])) {
-            console.log(fruitNames[fruitindex]);
-            fruits[fruitindex].position.x = intersects[0].point.x;
-            fruits[fruitindex].position.y = intersects[0].point.y;
+            console.log(fruits[fruitindex].scene);
+            fruits[fruitindex].scene.position.x = intersects[0].point.x;
+            fruits[fruitindex].scene.position.y = intersects[0].point.y;
         }
     }
     else {
@@ -126,7 +129,8 @@ function updateFruits(fruitindex) {
             fruits[fruitindex].visible = false;
         }
         else {
-            if (!doesIntersect(intersects, "table") && doesIntersect(intersects, fruitNames[fruitindex])) {
+            if (!doesIntersect(intersects, "Desk") && doesIntersect(intersects, fruitNames[fruitindex])) {
+                console.log("off table");
                 fruits[fruitindex].position = fruitPos[fruitindex];
             }
         }
@@ -167,10 +171,10 @@ function setScene() {
     loadModel('/models/Lights/uploads_files_3293341_DH.glb', "lamp", 8,8,8, -35,2,0);
     loadWaterGlass();
 
-    loadFruit('/models/fruits/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, -6,8.3,0, 0);
-    loadFruit('/models/fruits/Banana/Banana.glb', "banana", 15,15,15, -4.3,8.3,0, 1);
-    loadFruit('/models/fruits/Watermelon/uploads_files_5929439_Half_of_a_watermelon_0218164538_refine.glb', "watermelon", 1,1,1, -2,8.8,0, 2);
-    loadFruit('/models/fruits/Strawberry/uploads_files_5834416_Strawberry.glb', "strawberry", 0.8,0.8,0.8, 2.5,9.4,0, 3);
+    loadFruit('/models/fruits/Broccoli/broccoli_v3.gltf', "broccoli", 0.05,0.05,0.05, -5.7,8.3,0, 0);
+    loadFruit('/models/fruits/Banana/Banana.glb', "Banana", 15,15,15, -4.3,8.3,0, 1);
+    loadFruit('/models/fruits/Watermelon/uploads_files_5929439_Half_of_a_watermelon_0218164538_refine.glb', "watermelon", 1,1,1, -2,8.8,0, 2); //watermelon
+    loadFruit('/models/fruits/Strawberry/uploads_files_5834416_Strawberry.glb', "strawberry", 0.8,0.8,0.8, 2.5,9.4,0, 3); //strawberry
     loadFruit('/models/fruits/Pumpkin/uploads_files_4241762_pumpkin(1).glb', "pumpkin", 1,1,1, 4.5,9,0, 4);
 }
 
@@ -227,23 +231,7 @@ function loadWaterGlass() {
     glass.name = "glass";
     glass.position.set(0,9.8,0);
 
-    const water_geometry = new THREE.CylinderGeometry(1.75,0.9,2.5,);
-    // const water_material = new THREE.MeshPhongMaterial({
-    //     wireframe: false,
-    //     map: new THREE.TextureLoader().load("/textures/water/Water_002_COLOR.jpg"),
-    //     normalMap: new THREE.TextureLoader().load("/textures/water/Water_002_NORM.jpg"),
-    //     aoMap: new THREE.TextureLoader().load("/textures/water/Water_002_OCC.jpg"),
-    //     // displacementMap: new THREE.TextureLoader().load("/textures/water/Water_002_DISP.png"),
-    //     specularMap: new THREE.TextureLoader().load("/textures/water/Water_002_ROUGH.jpg"),
-    //     side: THREE.DoubleSide
-    // });
-    const water_material = new THREE.MeshPhongMaterial({
-        wireframe: false,
-        side: THREE.DoubleSide,
-        color: colours["clear"],
-    })
-    water = new THREE.Mesh(water_geometry, water_material);
-    water.name = "water";
+    
     water.position.set(0,9.8,0);
 
     scene.add(glass);
