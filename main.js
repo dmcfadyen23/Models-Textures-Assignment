@@ -210,7 +210,7 @@ function updateFruits(fruitindex) {
             if (doesIntersect(intersects, fruitNames[fruitindex])) {
                 // console.log(fruits[fruitindex].scene);
                 fruits[fruitindex].scene.position.x = intersects[0].point.x;
-                fruits[fruitindex].scene.position.y = intersects[0].point.y-0.15;
+                fruits[fruitindex].scene.position.y = intersects[0].point.y-0.12;
             }
         }
         else {
