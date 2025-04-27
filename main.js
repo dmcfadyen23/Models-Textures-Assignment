@@ -13,6 +13,21 @@ let holding = false;
 let loaded = false;
 let objective = randInt(0,4);
 let objectiveReached = false;
+const loader = new FontLoader();
+let textmesh = new THREE.Mesh();
+loader.load('/fonts/helvetiker_regular.typeface.json', function(font) {
+const geometry = new TextGeometry("Objective\nCompleted", {
+    font: font,
+    size: 2,
+    depth: 0.1,
+    });
+    textmesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial( { color: new THREE.Color(0,0,0)}));
+    textmesh.name = "button";
+    textmesh.position.x = 200;
+    textmesh.position.y = 200;
+    textmesh.position.z = 5;
+    scene.add(textmesh);
+});
 // console.log(objective);
 const mouse = new THREE.Vector2();
 
@@ -60,6 +75,8 @@ water.name = "water";
 function resetFunction() {
     let i = 0;
     console.log("enter reset");
+    textmesh.position.x = 200;
+    textmesh.position.y = 200;
     fruits.forEach(function() {
         fruits[i].scene.visible = true;
         fruits[i].scene.position.x = fruitPos[i].x;
@@ -110,23 +127,28 @@ function UpdateScene() {
         createButton();
         objectiveReached = false;
     }
+    checkForReset();
     renderer.render(scene, camera);
 }
 
+function checkForReset() {
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (holding) {
+        // console.log(intersects);
+        if (doesIntersect(intersects,"button")) {
+            // console.log(intersects);
+            resetFunction();
+        }
+    }
+}
+
 function createButton() {
-    const loader = new FontLoader();
-    loader.load('/fonts/helvetiker_regular.typeface.json', function(font) {
-        const geometry = new TextGeometry("Objective\nCompleted", {
-            font: font,
-            size: 2,
-            depth: 0.1,
-        });
-        const textmesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial( { color: new THREE.Color(0,0,0)}));
-        textmesh.position.x = -7;
-        textmesh.position.y = 11;
-        textmesh.position.z = 5;
-        scene.add(textmesh);
-    });
+    textmesh.position.x = -6.5;
+    textmesh.position.y = 13;
+    textmesh.position.z = 5;
 }
 
 function doesIntersect(intersects, name) {
