@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { randInt } from 'three/src/math/MathUtils.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
@@ -13,6 +11,7 @@ let holding = false;
 let loaded = false;
 let objective = randInt(0,4);
 let objectiveReached = false;
+
 const loader = new FontLoader();
 let textmesh = new THREE.Mesh();
 loader.load('/fonts/helvetiker_regular.typeface.json', function(font) {
@@ -25,10 +24,24 @@ const geometry = new TextGeometry("Objective\nCompleted", {
     textmesh.name = "button";
     textmesh.position.x = 200;
     textmesh.position.y = 200;
-    textmesh.position.z = 5;
+    textmesh.position.z = -15;
     scene.add(textmesh);
 });
-// console.log(objective);
+
+let createtextmesh = new THREE.Mesh();
+loader.load('/fonts/helvetiker_regular.typeface.json', function(font) {
+const geometry = new TextGeometry("Create:", {
+    font: font,
+    size: 1,
+    depth: 0.1,
+    });
+    createtextmesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial( { color: new THREE.Color(0,0,0)}));
+    createtextmesh.position.x = -12;
+    createtextmesh.position.y = 17;
+    createtextmesh.position.z = -15;
+    scene.add(createtextmesh);
+});
+
 const mouse = new THREE.Vector2();
 
 /* ORDER
@@ -68,13 +81,24 @@ const water_material = new THREE.MeshPhongMaterial({
     wireframe: false,
     side: THREE.DoubleSide,
     color: colours["clear"],
-})
+});
 const water = new THREE.Mesh(water_geometry, water_material);
 water.name = "water";
 
+const objective_geometry = new THREE.BoxGeometry(2,2,0.1);
+const objective_material = new THREE.MeshPhongMaterial({
+    wireframe: false,
+    side: THREE.DoubleSide,
+    color: colours["red"],
+});
+const objectiveDisplay = new THREE.Mesh(objective_geometry, objective_material);
+objectiveDisplay.position.x = -6;
+objectiveDisplay.position.y = 17.5;
+objectiveDisplay.position.z = -15;
+objectiveDisplay.name = "objDisplay";
+
 function resetFunction() {
     let i = 0;
-    console.log("enter reset");
     textmesh.position.x = 200;
     textmesh.position.y = 200;
     fruits.forEach(function() {
@@ -85,7 +109,23 @@ function resetFunction() {
     })
     water.material.color = colours["clear"];
     objective = randInt(0,4);
-    console.log(objective);
+    switch (objective) {
+        case 0:
+            objectiveDisplay.material.color = colours["green"];
+            break;
+        case 1:
+            objectiveDisplay.material.color = colours["yellow"];
+            break;
+        case 2:
+            objectiveDisplay.material.color = colours["red"];
+            break;
+        case 3:
+            objectiveDisplay.material.color = colours["pink"];
+            break;
+        case 4:
+            objectiveDisplay.material.color = colours["orange"];
+            break;
+    }
 }
 
 let settings = {
@@ -94,7 +134,7 @@ let settings = {
 
 
 
-const gui = new GUI();
+// const gui = new GUI();
 
 
 
@@ -137,9 +177,7 @@ function checkForReset() {
     const intersects = raycaster.intersectObjects(scene.children, true);
 
     if (holding) {
-        // console.log(intersects);
         if (doesIntersect(intersects,"button")) {
-            // console.log(intersects);
             resetFunction();
         }
     }
@@ -148,7 +186,7 @@ function checkForReset() {
 function createButton() {
     textmesh.position.x = -6.5;
     textmesh.position.y = 13;
-    textmesh.position.z = 5;
+    textmesh.position.z = -15;
 }
 
 function doesIntersect(intersects, name) {
@@ -182,7 +220,6 @@ function updateFruits(fruitindex) {
                 
                 // console.log(fruitindex);
                 if (objective == fruitindex) {
-                    console.log("objective reached");
                     objectiveReached = true;
                 }
                 fruits[fruitindex].scene.visible = false;
@@ -209,7 +246,6 @@ function updateFruits(fruitindex) {
             }
             else {
                 if (!doesIntersect(intersects, "Desk") && doesIntersect(intersects, fruitNames[fruitindex])) {
-                    // console.log("off table");
                     // console.log(fruits[fruitindex].scene);
                     fruits[fruitindex].scene.position.x = fruitPos[fruitindex].x;
                     fruits[fruitindex].scene.position.y = fruitPos[fruitindex].y;
@@ -260,7 +296,7 @@ function setScene() {
     loadFruit('/models/fruits/Strawberry/uploads_files_5834416_Strawberry.glb', "strawberry", 0.8,0.8,0.8, 2.5,9.4,0, 3); //strawberry
     loadFruit('/models/fruits/Pumpkin/uploads_files_4241762_pumpkin(1).glb', "pumpkin", 1,1,1, 4.5,9,0, 4);
     loaded = true;
-    console.log(objective);
+    scene.add(objectiveDisplay);
 }
 
 
